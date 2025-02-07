@@ -1,9 +1,8 @@
-import {useState,useEffect} from 'react'
+import {useState,useEffect,useCallback} from 'react'
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import WeatherBox from './component/WeatherBox';
 import WeatherButton from './component/WeatherButton';
-import { async } from 'q';
 import ClipLoader from "react-spinners/ClipLoader";
 
 
@@ -41,7 +40,8 @@ function App() {
     setLoading(false)
   };
 
-  const getWeatherByCurrentLocation = async(lat,lon)=>{
+  const getWeatherByCurrentLocation = useCallback(async(lat,lon)=>{
+    if (!city) return;
     let url =`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=9538b2ab5adfd443dd84cd5845e44335&units=metric`;
     setLoading(true)
     let response = await fetch(url)
@@ -49,19 +49,25 @@ function App() {
     console.log(data);
     setWeather(data);
     setLoading(false)
-  };
+  });
 
-  const getWeatherByCity = async() =>{
-    let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=9538b2ab5adfd443dd84cd5845e44335&units=metric`
-    setLoading(true)
-    let response = await fetch(url)
-    let data = await response.json();
-    setWeather(data);
-    setLoading(false)
-  }
+  const getWeatherByCity = useCallback(async () => {
+    if (!city) return; // 🌟 city가 없을 때 불필요한 요청 방지
+    try {
+      setLoading(true);
+      let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=9538b2ab5adfd443dd84cd5845e44335&units=metric`;
+      let response = await fetch(url);
+      let data = await response.json();
+      setWeather(data);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [city]);
 
   useEffect(() => {
-    if(city == ""){
+    if(city === ""){
       getCurrentLocation()
     }else{
        getWeatherByCity()
