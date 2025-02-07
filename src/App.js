@@ -52,7 +52,6 @@ function App() {
   });
 
   const getWeatherByCity = useCallback(async () => {
-    if (!city) return; // 🌟 city가 없을 때 불필요한 요청 방지
     try {
       setLoading(true);
       let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=9538b2ab5adfd443dd84cd5845e44335&units=metric`;
